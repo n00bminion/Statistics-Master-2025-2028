@@ -139,23 +139,47 @@ process_and_save_all_data <- function(
 
 build_shiny_ui <- function() {
     ui <- bslib::page_sidebar(
-        title = "Test App Title",
+        title = "Case Study App Title",
         sidebar = bslib::sidebar(
-            # Input: Slider for the number of bins ----
             sliderInput(
-                inputId = "bins",
-                label = "Number of bins:",
-                min = 1,
-                max = 50,
-                value = 30
+                inputId = "longitudeSlider",
+                label = "Longitude",
+                min = -180,
+                max = 180,
+                value = 0
             )
-        )
+        ),
+        plotOutput(outputId = "plotSlider")
     )
     return(ui)
+}
+
+build_shiny_server <- function(input, output) {
+    # output$plotSlider <- renderPlot({
+    #     x <- geo_data$waiting
+    #     bins <- seq(min(x), max(x), length.out = input$bins + 1)
+
+    #     hist(x,
+    #         breaks = bins, col = "#007bc2", border = "white",
+    #         xlab = "Waiting time to next eruption (in mins)",
+    #         main = "Histogram of waiting times"
+    #     )
+    # })
 }
 
 # MetOfficeData folder & data files should appear when this runs
 process_and_save_all_data()
 
+# grab the processed data and load to global
 hist_data <- get_data(file_name = "hist_data")
-hist_data
+geo_data <- get_data(file_name = "geo_data")
+combined_data <- dplyr::inner_join(geo_data, hist_data, by = "name")
+combined_data
+
+# build the app and run
+shinyApp(
+    # ui takes result from func
+    ui = build_shiny_ui(),
+    # server takes func obj
+    server = build_shiny_server
+)
